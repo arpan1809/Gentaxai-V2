@@ -119,7 +119,6 @@ if os.path.exists("static"):
 else:
     print("Warning: 'static' directory not found. The web interface will not be available.")
 
-if __name__ != "__main__":
-    vercel_app = app
+
 
 
