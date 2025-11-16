@@ -1,10 +1,15 @@
-fastapi==0.109.2
-uvicorn==0.29.0
+
+
 gunicorn==23.0.0
 python-dotenv==1.0.1
 jinja2==3.1.6
 aiohttp==3.13.2
 httpx==0.28.1
+
+fastapi==0.103.2
+pydantic==1.10.12
+uvicorn==0.23.2
+starlette==0.27.0
 
 # LangChain + Vector store
 langchain==0.1.20
@@ -15,8 +20,7 @@ faiss-cpu==1.9.0.post1
 sentence-transformers==2.7.0
 
 # Pydantic v1 (critical)
-pydantic==1.10.13
-pydantic-core==2.23.4
+
 typing-extensions==4.8.0
 
 # Utilities
