@@ -14,6 +14,6 @@ pip install --no-cache-dir --force-reinstall -r requirements.txt
 
 # Run your data pipeline to build the FAISS index
 echo "Building Knowledge Base..."
-python build.py
+python base.py
 
 echo "Build finished successfully."
