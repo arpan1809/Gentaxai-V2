@@ -45,26 +45,26 @@ async def load_models():
     """Load models in background without blocking startup"""
     global retriever, llm, models_loaded
     
-    print("🔄 Starting background model loading...")
+    print(" Starting background model loading...")
     
     try:
         # Load LLM first (fast)
-        print("📦 Loading Groq LLM...")
+        print(" Loading Groq LLM...")
         llm = ChatGroq(
             model_name=Config.GROQ_MODEL,
             api_key=Config.GROQ_API_KEY,
             temperature=0.3
         )
-        print(f"✅ LLM ready: {Config.GROQ_MODEL}")
+        print(f" LLM ready: {Config.GROQ_MODEL}")
         
         # Load embeddings (slow - ~30-60 seconds)
-        print("📦 Loading embedding model (this takes 30-60 seconds)...")
+        print(" Loading embedding model")
         embeddings = HuggingFaceEmbeddings(
             model_name=Config.EMBEDDING_MODEL,
             model_kwargs={"device": "cpu"},
             encode_kwargs={"batch_size": 32}
         )
-        print("✅ Embeddings ready")
+        print("Embeddings ready")
         
         # Load FAISS index if available
         if os.path.exists(Config.FAISS_INDEX_PATH):
@@ -75,15 +75,15 @@ async def load_models():
                 allow_dangerous_deserialization=True
             )
             retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
-            print("✅ FAISS index ready")
+            print(" FAISS index ready")
         else:
-            print("⚠️  No FAISS index found - using LLM knowledge only")
+            print(" No FAISS index found - using LLM knowledge only")
         
         models_loaded = True
-        print("🎉 All models loaded successfully!")
+        print(" All models loaded successfully!")
         
     except Exception as e:
-        print(f"❌ Error loading models: {e}")
+        print(f" Error loading models: {e}")
         models_loaded = False
 
 @asynccontextmanager
@@ -96,17 +96,16 @@ async def lifespan(app: FastAPI):
     # Start loading models in background
     asyncio.create_task(load_models())
     
-    print("✅ App started - models loading in background")
+    print(" App started - models loading in background")
     print("=" * 60)
     
-    yield  # Application runs here
+    yield  
     
     print("Shutting down...")
 
-# Create app with lifespan
 app = FastAPI(title="GenTaxAI", lifespan=lifespan)
 
-# Add CORS
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -115,7 +114,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve static files
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
@@ -137,12 +136,11 @@ async def health():
 async def chat(request: Request):
     """Main chat endpoint"""
     
-    # Return helpful message if models still loading
     if not models_loaded:
         return JSONResponse(
             status_code=503,
             content={
-                "answer": "🔄 AI models are still loading (takes 30-60 seconds on first start). Please try again in a moment!",
+                "answer": " AI models are still loading ",
                 "loading": True
             }
         )
@@ -162,16 +160,16 @@ async def chat(request: Request):
     print(f"📨 Query: {query}")
     
     try:
-        # Get context from FAISS
+       
         if retriever:
             docs = retriever.get_relevant_documents(query)
             context = "\n\n".join([doc.page_content[:500] for doc in docs[:3]])
-            print(f"📚 Retrieved {len(docs)} docs")
+            print(f" Retrieved {len(docs)} docs")
         else:
             context = "[No knowledge base available]"
-            print("⚠️  Using LLM knowledge only")
+            print(" Using LLM knowledge only")
 
-        # Generate answer
+      
         prompt = ChatPromptTemplate.from_messages([
             ("system", SYSTEM_PROMPT),
             ("human", "{question}")
@@ -180,10 +178,11 @@ async def chat(request: Request):
         chain = prompt | llm | StrOutputParser()
         answer = chain.invoke({"question": query, "context": context})
         
-        print(f"✅ Generated answer ({len(answer)} chars)")
+        print(f" Generated answer ({len(answer)} chars)")
         return JSONResponse({"answer": answer})
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f" Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
