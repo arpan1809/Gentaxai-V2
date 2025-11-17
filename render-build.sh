@@ -1,19 +1,17 @@
 #!/usr/bin/env bash
-# Exit on error
+# Exit on any error
 set -o errexit
 
-# Set a specific, stable Python version
-export PYTHON_VERSION=3.11.5
+echo "Using Python version: $PYTHON_VERSION"
 
-# Upgrade pip
+# Upgrade pip safely
+echo "Upgrading pip..."
 pip install --upgrade pip
 
-# Forcefully re-install all dependencies from requirements.txt, ignoring any cached versions
-echo "Installing dependencies with a clean cache..."
-pip install --no-cache-dir --force-reinstall -r requirements.txt
+# Install dependencies WITHOUT cache to avoid OOM from unpacked wheels
+echo "Installing dependencies..."
+pip install --no-cache-dir -r requirements.txt
 
-# Run your data pipeline to build the FAISS index
-echo "Building Knowledge Base..."
-python base.py
+echo "Skipping FAISS index build (using prebuilt index from repo)."
 
-echo "Build finished successfully."
+echo "Build completed successfully."
