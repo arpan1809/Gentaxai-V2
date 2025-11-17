@@ -3,14 +3,10 @@ services:
     name: gentax-ai
     env: python
     plan: free
-  
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+
+    buildCommand: "./render-build.sh"
     startCommand: "uvicorn GENTAX-AI.gentaxai.main:app --host 0.0.0.0 --port $PORT"
 
-    runtime:
-      python:
-        version: "3.12.3"
-
-    autoDeploy: true
-
-    region: oregon
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
